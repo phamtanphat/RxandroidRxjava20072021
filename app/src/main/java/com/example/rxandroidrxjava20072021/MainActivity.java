@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,37 +20,41 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.function.Consumer;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
     int a = 0;
-    private ExecutorService executors;
+    TextView mTv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        executors = Executors.newFixedThreadPool(1);
+        mTv = findViewById(R.id.textView);
 
-       Future future = executors.submit(new Callable<Object>() {
-           @Override
-           public Object call() throws Exception {
-               Log.d("BBB",Thread.currentThread().getName());
-               Thread.sleep(2000);
-               a = 0;
-               Integer b = null;
-               a = a / b;
-               return a;
-           }
-       });
+        Observable<String> observable = Observable.just("A","B","C","D","E","F");
 
-        try {
-            Log.d("BBB",future.get().toString());
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        observable
+                .subscribeOn(Schedulers.io())
+                .map(new Function<String, String>() {
+                    @Override
+                    public String apply(String s) throws Throwable {
+                        return "Item " + s;
+                    }
+                })
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Throwable {
+
+                    }
+                });
+
     }
 }
