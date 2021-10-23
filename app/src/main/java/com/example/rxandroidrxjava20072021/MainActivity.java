@@ -1,6 +1,5 @@
 package com.example.rxandroidrxjava20072021;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,6 +10,7 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -20,10 +20,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -32,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     int a = 0;
     TextView mTv;
+    Disposable disposable;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,19 +44,33 @@ public class MainActivity extends AppCompatActivity {
 
         mTv = findViewById(R.id.textView);
 
-        Observable<String> observable = Observable.just("A","B","C","D","E","F");
+        Observable<Long> observable = Observable.interval(1, TimeUnit.SECONDS);
 
         observable
                 .subscribeOn(Schedulers.io())
-                .map(new Function<String, String>() {
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Long>() {
                     @Override
-                    public String apply(String s) throws Throwable {
-                        return "Item " + s;
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                        Log.d("BBB", d.isDisposed() + " ");
                     }
-                })
-                .subscribe(new Consumer<String>() {
+
                     @Override
-                    public void accept(String s) throws Throwable {
+                    public void onNext(@NonNull Long aLong) {
+                        if (aLong == 5){
+                            disposable.dispose();
+                        }
+                        Log.d("BBB","Data " + aLong);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
 
                     }
                 });
