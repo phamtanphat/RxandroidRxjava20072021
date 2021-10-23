@@ -24,19 +24,22 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.MaybeObserver;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
     int a = 0;
     TextView mTv;
-    Disposable disposable;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,24 +47,29 @@ public class MainActivity extends AppCompatActivity {
 
         mTv = findViewById(R.id.textView);
 
-        Observable<Long> observable = Observable.interval(1, TimeUnit.SECONDS);
+        Observable<Long> observable = Observable.just(1l,2l,3l,4l,5l,6l);
 
         observable
                 .subscribeOn(Schedulers.io())
+                .filter(new Predicate<Long>() {
+                    @Override
+                    public boolean test(Long aLong) throws Throwable {
+                        if (aLong % 2 == 0){
+                            return true;
+                        }
+                        return false;
+                    }
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Long>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
-                        disposable = d;
-                        Log.d("BBB", d.isDisposed() + " ");
+
                     }
 
                     @Override
                     public void onNext(@NonNull Long aLong) {
-                        if (aLong == 5){
-                            disposable.dispose();
-                        }
-                        Log.d("BBB","Data " + aLong);
+                        Log.d("BBB","Kết Quả " + aLong);
                     }
 
                     @Override
